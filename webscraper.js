@@ -1,7 +1,6 @@
 const puppeteer = require("puppeteer");
 const { writeFileSync } = require("fs");
 const { sleep } = require("deasync");
-const { time } = require("console");
 
 const STARTTIME = Date.now()
 
