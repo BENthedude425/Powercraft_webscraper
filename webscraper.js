@@ -72,7 +72,14 @@ async function GetVanillaFiles(sources, threadData) {
             continue;
         }
 
-        const version = result.file.split("-")[1];
+        // quick fix because RC1 files were overwriting originals / stable releases
+        //const version = result.file.split("-")[1];
+        const version = result.file.slice(result.file.indexOf("-") + 1)
+
+        if(version.startsWith("1.20.4")){
+            console.log(version)
+        }
+
         threadData.results[version] = result;
     }
 
