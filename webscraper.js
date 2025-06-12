@@ -1,9 +1,9 @@
 const puppeteer = require("puppeteer");
-const { writeFileSync } = require("fs");
+const { writeFileSync, appendFileSync } = require("fs");
 const { sleep } = require("deasync");
 
 const STARTTIME = Date.now();
-const THREADCOUNT = 15
+const THREADCOUNT = 15;
 
 URLS = {
     vanilla: "https://mcversions.net/",
@@ -12,7 +12,7 @@ URLS = {
 };
 
 async function GetVanillaSources() {
-    const page = await browser.newPage()
+    const page = await browser.newPage();
     await page.goto(URLS["vanilla"]);
 
     let urls = await page.evaluate((URLS) => {
@@ -74,11 +74,7 @@ async function GetVanillaFiles(sources, threadData) {
 
         // quick fix because RC1 files were overwriting originals / stable releases
         //const version = result.file.split("-")[1];
-        const version = result.file.slice(result.file.indexOf("-") + 1)
-
-        if(version.startsWith("1.20.4")){
-            console.log(version)
-        }
+        const version = result.file.slice(result.file.indexOf("-") + 1);
 
         threadData.results[version] = result;
     }
@@ -111,7 +107,7 @@ async function GetForgeSources() {
         return sources;
     }, URLS);
 
-    page.close()
+    page.close();
     return urls;
 }
 
@@ -203,6 +199,21 @@ async function GetSpigotSources() {
 }
 
 async function GetSpigotFiles(sources, threadData) {
+    for (let i = 0; i < sources.length; i++) {
+        const selectedSource = sources[i];
+
+        result = {
+            file: `Spigot-${selectedSource.version}.jar`,
+            link: selectedSource.url,
+        };
+        threadData.results[selectedSource.version] = result;
+    }
+
+    threadData.completeThreads += 1;
+}
+
+// Updated site made function obselete
+async function GetSpigotFilesOLD(sources, threadData) {
     const page = await browser.newPage();
 
     for (let i = 0; i < sources.length; i++) {
@@ -310,7 +321,9 @@ async function main() {
 
     console.log("Gathering spigot server files..");
     const spigotSources = await GetSpigotSources();
+    console.log("Processing spigot files");
     const spigotFiles = await ProcessFiles(spigotSources, GetSpigotFiles);
+    console.log("done");
 
     // Add all files collected into a signle object
     const allFiles = {
